@@ -1,6 +1,7 @@
 const OPEN_DATE = new Date("2026-04-28T00:00:00");
 const CLOSE_DATE = new Date("2026-05-02T23:59:59");
 const TOTAL_POINTS = 30;
+
 const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxZosDaXXVMfxpHj__kOQ_BZDOYq8-aQJTtFg991zzRk8OoYjeuLf3s00z7aFqBitWVcQ/exec";
 
 let assignmentStartTime = Date.now();
@@ -136,7 +137,10 @@ const questions = [
     type: "text",
     points: 2,
     title: "1. על פי פסקה א, אילו שני סימנים לשינוי סביבתי מתאר פרידמן?",
-    keywords: [["שדה", "השדה", "לא קיים", "כבר לא קיים", "אקלים משתנה", "האקלים משתנה", "שינוי אקלים"], ["זחלים", "לא רואה", "לא רואה זחלים", "בעלי חיים", "נכחדים", "נכחד", "היעלמות", "נעלמים", "חיות"]],
+    keywords: [
+      ["שדה", "השדה", "לא קיים", "כבר לא קיים", "אקלים משתנה", "האקלים משתנה", "שינוי אקלים"],
+      ["זחלים", "לא רואה", "לא רואה זחלים", "בעלי חיים", "נכחדים", "נכחד", "היעלמות", "נעלמים", "חיות"]
+    ],
     answer: "תשובות אפשריות: השדה כבר לא קיים; הוא כבר לא רואה זחלים; בעלי חיים נכחדים; האקלים משתנה לנגד עיניו; יש סימנים מדאיגים למשבר האקלים."
   },
   {
@@ -153,7 +157,10 @@ const questions = [
     type: "text",
     points: 3,
     title: "3. על פי פסקה ג, מה עשתה גרטה תונברג כדי לקדם פעולה נגד משבר האקלים? ציינו שתי פעולות או תוצאות.",
-    keywords: [["הפסיקה ללמוד", "בית הספר"], ["להקשיב למדע", "מנהיג", "סחפה", "מחאה", "לפעול"]],
+    keywords: [
+      ["הפסיקה ללמוד", "בית הספר"],
+      ["להקשיב למדע", "מנהיג", "סחפה", "מחאה", "לפעול"]
+    ],
     answer: "הפסיקה ללמוד כדי לעסוק במשבר האקלים, קראה למנהיגי העולם להקשיב למדע ולפעול, וסחפה אחריה אנשים למחאה."
   },
   { section: "שאלות יישום" },
@@ -314,7 +321,6 @@ function gradeFillAnswer(q) {
   return earned;
 }
 
-
 function highlightInstructionWords(text) {
   if (!text) return "";
 
@@ -342,7 +348,6 @@ function highlightInstructionWords(text) {
     .replaceAll("שתי פעולות", '<span class="highlight-two">שתי</span> פעולות')
     .replaceAll("שתי השפעות", '<span class="highlight-two">שתי</span> השפעות');
 }
-
 
 const glossaryTerms = [
   { term: "משבר האקלים", meaning: "أزمة المناخ" },
@@ -610,11 +615,15 @@ async function handleSubmit(event) {
   const percent = Math.round((score / TOTAL_POINTS) * 100);
 
   const payload = {
+    assignmentType: "climate",
     studentName: document.getElementById("studentName").value || "",
-    studentClass: document.getElementById("studentClass").value || "",
+    className: document.getElementById("studentClass").value || "",
     teacherName: document.getElementById("teacherName").value || "",
+    autoScore: score,
     score: score,
     percent: percent,
+    answers: answersForSheet,
+
     q1: answersForSheet.q1 || "",
     q2: answersForSheet.q2 || "",
     q3: answersForSheet.q3 || "",
@@ -628,11 +637,14 @@ async function handleSubmit(event) {
     q11a: answersForSheet.q11a || "",
     q11b: answersForSheet.q11b || "",
     q11c: answersForSheet.q11c || "",
+
     focusLossCount: focusLossCount,
     copyPasteCount: copyPasteCount,
     fullscreenExitCount: fullscreenExitCount,
     elapsedMinutes: Math.round(((Date.now() - assignmentStartTime) / 60000) * 10) / 10,
-    securityStatus: (focusLossCount + copyPasteCount + fullscreenExitCount) === 0 ? "תקין" : ((focusLossCount + copyPasteCount + fullscreenExitCount) <= 2 ? "אזהרה" : "חשד"),
+    securityStatus: (focusLossCount + copyPasteCount + fullscreenExitCount) === 0
+      ? "תקין"
+      : ((focusLossCount + copyPasteCount + fullscreenExitCount) <= 2 ? "אזהרה" : "חשד"),
     securityEvents: securityEvents.join(" || ")
   };
 
@@ -663,7 +675,7 @@ async function handleSubmit(event) {
     <h2>תוצאה</h2>
     <p class="score">ציון: ${score} מתוך ${TOTAL_POINTS} נקודות (${percent})</p>
     <p><strong>שם:</strong> ${payload.studentName || "לא הוזן"}</p>
-    <p><strong>כיתה:</strong> ${payload.studentClass || "לא הוזנה"}</p>
+    <p><strong>כיתה:</strong> ${payload.className || "לא הוזנה"}</p>
     <p><strong>שם המורה:</strong> ${payload.teacherName || "לא הוזן"}</p>
     <p class="${savedToSheet ? "correct" : "wrong"}">${saveMessage}</p>
     <p><strong>בקרת מסך:</strong> יציאות מהמסך: ${payload.focusLossCount}, ניסיונות העתקה/הדבקה: ${payload.copyPasteCount}, יציאות ממסך מלא: ${payload.fullscreenExitCount}, סטטוס: ${payload.securityStatus}</p>
